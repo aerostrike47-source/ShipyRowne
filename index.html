@@ -1,1 +1,330 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShipyRówne - Kalkulator Dopasowania</title>
+  <style>
+    :root {
+      --bg-color: #0d1117;
+      --card-bg: #161b22;
+      --border-color: #30363d;
+      --text-color: #c9d1d9;
+      --accent-color: #ff4b72;
+      --accent-hover: #e03e61;
+    }
 
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 600px;
+    }
+
+    h1, h2 {
+      text-align: center;
+      color: #ffffff;
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .input-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 10px 14px;
+      background-color: #0d1117;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: #fff;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: var(--accent-color);
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: var(--accent-color);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    button:hover {
+      background-color: var(--accent-hover);
+    }
+
+    .graphics-container {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      margin: 20px 0;
+    }
+
+    .graphic-slot {
+      width: 100px;
+      height: 100px;
+      border: 2px dashed var(--border-color);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .graphic-slot img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    #result {
+      text-align: center;
+      margin-top: 20px;
+      display: none;
+    }
+
+    .score {
+      font-size: 48px;
+      font-weight: bold;
+      color: var(--accent-color);
+      margin: 10px 0;
+    }
+
+    .status {
+      font-size: 22px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .history-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .history-item {
+      background-color: #0d1117;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .history-header {
+      font-size: 12px;
+      color: #8b949e;
+      margin-bottom: 4px;
+    }
+
+    .history-body {
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .history-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      background-color: var(--accent-color);
+      color: #fff;
+      font-size: 12px;
+      float: right;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>ShipyRówne ❤️</h1>
+
+    <!-- Kalkulator -->
+    <div class="card">
+      <div class="input-group">
+        <label for="checker">Kto sprawdza (Twoje imię):</label>
+        <input type="text" id="checker" placeholder="np. Ania">
+      </div>
+
+      <div class="input-group">
+        <label for="person1">Pierwsza osoba:</label>
+        <input type="text" id="person1" placeholder="np. Oliwka">
+      </div>
+
+      <div class="input-group">
+        <label for="person2">Druga osoba:</label>
+        <input type="text" id="person2" placeholder="np. Kajtek">
+      </div>
+
+      <!-- Miejsca na Twoje grafiki -->
+      <div class="graphics-container">
+        <div class="graphic-slot" id="slot1">
+          <!-- Zamień 'obrazek1.png' na ścieżkę do swojej grafiki -->
+          <img src="obrazek1.png" alt="Grafika 1" onerror="this.parentElement.innerText='[Grafika 1]'">
+        </div>
+        <div style="font-size: 24px;">+</div>
+        <div class="graphic-slot" id="slot2">
+          <!-- Zamień 'obrazek2.png' na ścieżkę do swojej grafiki -->
+          <img src="obrazek2.png" alt="Grafika 2" onerror="this.parentElement.innerText='[Grafika 2]'">
+        </div>
+      </div>
+
+      <button onclick="calculateLove()">Sprawdź dopasowanie!</button>
+
+      <div id="result">
+        <div class="score" id="scoreValue">0%</div>
+        <div class="status" id="statusValue">-</div>
+      </div>
+    </div>
+
+    <!-- Historia -->
+    <div class="card">
+      <h2>Historia Wpisów</h2>
+      <ul class="history-list" id="historyList">
+        <li style="text-align: center; color: #8b949e;">Brak historii wpisów.</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // Losowanie według Twojej skali prawdopodobieństwa
+    function getRandomPercentage() {
+      const rand = Math.random() * 100;
+      
+      // 0% ma bardzo małą szansę (ok. 1%)
+      if (rand < 1) return 0;
+      
+      // 20% - 90% to zakres przeciętny (ok. 75% szansy)
+      if (rand < 76) {
+        return Math.floor(Math.random() * (90 - 20 + 1)) + 20;
+      } 
+      // Skrajne niskie (1% - 19%)
+      else if (rand < 88) {
+        return Math.floor(Math.random() * (19 - 1 + 1)) + 1;
+      } 
+      // Skrajne wysokie (91% - 100%)
+      else {
+        return Math.floor(Math.random() * (100 - 91 + 1)) + 91;
+      }
+    }
+
+    // Przypisanie opisu na podstawie progu procentowego
+    function getStatusDescription(percent) {
+      if (percent === 0) return "Nie ma szans... (ale jednak jest ciutka!)";
+      if (percent <= 10) return "Nienawiść";
+      if (percent <= 20) return "Nie lubię";
+      if (percent <= 30) return "Spływka";
+      if (percent <= 40) return "Nawet ok";
+      if (percent <= 50) return "Spoczko";
+      if (percent <= 60) return "Nawet lubię";
+      if (percent <= 70) return "Lubię";
+      if (percent <= 80) return "Bardzo lubię";
+      if (percent <= 90) return "Podkochuje się";
+      return "Kocham";
+    }
+
+    // Ładowanie historii z pamięci przeglądarki (LocalStorage)
+    function loadHistory() {
+      const history = JSON.parse(localStorage.getItem('shipHistory')) || [];
+      const historyList = document.getElementById('historyList');
+      
+      if (history.length === 0) {
+        historyList.innerHTML = '<li style="text-align: center; color: #8b949e;">Brak historii wpisów.</li>';
+        return;
+      }
+
+      historyList.innerHTML = '';
+      history.slice().reverse().forEach(entry => {
+        const li = document.createElement('li');
+        li.className = 'history-item';
+        li.innerHTML = `
+          <div class="history-header">Sprawdził(a): <strong>${entry.checker}</strong> • ${entry.date}</div>
+          <div class="history-body">
+            ${entry.p1} + ${entry.p2}
+            <span class="history-badge">${entry.percent}% (${entry.status})</span>
+          </div>
+        `;
+        historyList.appendChild(li);
+      });
+    }
+
+    // Główna funkcja wyliczająca
+    function calculateLove() {
+      const checker = document.getElementById('checker').value.trim() || 'Anonim';
+      const person1 = document.getElementById('person1').value.trim();
+      const person2 = document.getElementById('person2').value.trim();
+
+      if (!person1 || !person2) {
+        alert('Wpisz imiona obu osób!');
+        return;
+      }
+
+      const percent = getRandomPercentage();
+      const status = getStatusDescription(percent);
+
+      // Pokaż wynik
+      document.getElementById('scoreValue').innerText = percent + '%';
+      document.getElementById('statusValue').innerText = status;
+      document.getElementById('result').style.display = 'block';
+
+      // Zapisz do historii
+      const now = new Date();
+      const timeString = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      
+      const newEntry = {
+        checker: checker,
+        p1: person1,
+        p2: person2,
+        percent: percent,
+        status: status,
+        date: timeString
+      };
+
+      const history = JSON.parse(localStorage.getItem('shipHistory')) || [];
+      history.push(newEntry);
+      localStorage.setItem('shipHistory', JSON.stringify(history));
+
+      loadHistory();
+    }
+
+    // Załaduj historię przy starcie
+    window.onload = loadHistory;
+  </script>
+
+</body>
+</html>
