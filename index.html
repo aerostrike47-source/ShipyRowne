@@ -61,31 +61,6 @@
       color: #ffffff;
     }
 
-    /* Wybór kategorii (zakładki) */
-    .tabs-container {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-
-    .tab-btn {
-      background-color: var(--card-bg);
-      border: 1px solid var(--border-color);
-      color: var(--text-color);
-      padding: 8px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: all 0.2s;
-    }
-
-    .tab-btn.active {
-      background-color: var(--accent-color);
-      border-color: var(--accent-color);
-      color: #fff;
-    }
-
     .card {
       background-color: var(--card-bg);
       border: 1px solid var(--border-color);
@@ -146,28 +121,35 @@
       opacity: 0.6;
     }
 
+    /* Miejsce zamiast grafik z wpisanymi imionami */
     .graphics-container {
       display: flex;
       justify-content: space-around;
       align-items: center;
       margin: 20px 0;
+      font-size: 18px;
+      font-weight: bold;
+      color: #ffffff;
+      text-align: center;
     }
 
     .graphic-slot {
-      width: 100px;
-      height: 100px;
+      flex: 1;
+      padding: 15px;
+      background-color: #0d1117;
       border: 2px dashed var(--border-color);
       border-radius: 8px;
+      min-height: 30px;
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
+      word-break: break-all;
     }
 
-    .graphic-slot img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+    .plus-sign {
+      padding: 0 15px;
+      font-size: 24px;
+      color: var(--accent-color);
     }
 
     #result {
@@ -234,13 +216,6 @@
   <div class="container">
     <h1>ShipyRówne ❤️</h1>
 
-    <!-- Wybór kategorii -->
-    <div class="tabs-container">
-      <button class="tab-btn active" id="tab-hetero" onclick="switchCategory('hetero')">Klasyczne</button>
-      <button class="tab-btn" id="tab-lesbian" onclick="switchCategory('lesbian')">Lesbijki</button>
-      <button class="tab-btn" id="tab-gay" onclick="switchCategory('gay')">Gejowskie</button>
-    </div>
-
     <!-- Kalkulator -->
     <div class="card">
       <div class="input-group">
@@ -249,24 +224,20 @@
       </div>
 
       <div class="input-group">
-        <label id="label1" for="person1">Pierwsza osoba:</label>
-        <input type="text" id="person1" placeholder="Kolega" oninput="validateInputs()">
+        <label for="person1">Pierwsza osoba:</label>
+        <input type="text" id="person1" placeholder="Kolega" oninput="updateNamesDisplay(); validateInputs()">
       </div>
 
       <div class="input-group">
-        <label id="label2" for="person2">Druga osoba:</label>
-        <input type="text" id="person2" placeholder="Koleżanka" oninput="validateInputs()">
+        <label for="person2">Druga osoba:</label>
+        <input type="text" id="person2" placeholder="Koleżanka" oninput="updateNamesDisplay(); validateInputs()">
       </div>
 
-      <!-- Miejsca na Twoje grafiki -->
+      <!-- Miejsce z wyświetlanými imionami zamiast grafik -->
       <div class="graphics-container">
-        <div class="graphic-slot" id="slot1">
-          <img src="obrazek1.png" alt="Grafika 1" onerror="this.parentElement.innerText='[Grafika 1]'">
-        </div>
-        <div style="font-size: 24px;">+</div>
-        <div class="graphic-slot" id="slot2">
-          <img src="obrazek2.png" alt="Grafika 2" onerror="this.parentElement.innerText='[Grafika 2]'">
-        </div>
+        <div class="graphic-slot" id="displayP1">Kolega</div>
+        <div class="plus-sign">+</div>
+        <div class="graphic-slot" id="displayP2">Koleżanka</div>
       </div>
 
       <button id="calcBtn" class="main-btn" onclick="calculateLove()" disabled>Sprawdź dopasowanie!</button>
@@ -279,7 +250,7 @@
 
     <!-- Historia -->
     <div class="card">
-      <h2 id="historyTitle">Historia Wpisów (Klasyczne)</h2>
+      <h2>Historia Wpisów</h2>
       <ul class="history-list" id="historyList">
         <li style="text-align: center; color: #8b949e;">Brak historii wpisów.</li>
       </ul>
@@ -287,46 +258,13 @@
   </div>
 
   <script>
-    let currentCategory = 'hetero';
-
-    function switchCategory(category) {
-      currentCategory = category;
+    // Aktualizowanie imion w sekcji "grafik" podczas pisania
+    function updateNamesDisplay() {
+      const p1 = document.getElementById('person1').value.trim();
+      const p2 = document.getElementById('person2').value.trim();
       
-      // Aktywne przyciski zakładek
-      document.getElementById('tab-hetero').className = category === 'hetero' ? 'tab-btn active' : 'tab-btn';
-      document.getElementById('tab-lesbian').className = category === 'lesbian' ? 'tab-btn active' : 'tab-btn';
-      document.getElementById('tab-gay').className = category === 'gay' ? 'tab-btn active' : 'tab-btn';
-
-      // Zmiana etykiet i tytułów w zależności od kategorii
-      const label1 = document.getElementById('label1');
-      const label2 = document.getElementById('label2');
-      const p1 = document.getElementById('person1');
-      const p2 = document.getElementById('person2');
-      const historyTitle = document.getElementById('historyTitle');
-
-      if (category === 'hetero') {
-        label1.innerText = 'Pierwsza osoba (Kolega):';
-        label2.innerText = 'Druga osoba (Koleżanka):';
-        p1.placeholder = 'Kolega';
-        p2.placeholder = 'Koleżanka';
-        historyTitle.innerText = 'Historia Wpisów (Klasyczne)';
-      } else if (category === 'lesbian') {
-        label1.innerText = 'Pierwsza dziewczyna:';
-        label2.innerText = 'Druga dziewczyna:';
-        p1.placeholder = 'Dziewczyna 1';
-        p2.placeholder = 'Dziewczyna 2';
-        historyTitle.innerText = 'Historia Wpisów (Lesbijki)';
-      } else if (category === 'gay') {
-        label1.innerText = 'Pierwszy chłopak:';
-        label2.innerText = 'Drugi chłopak:';
-        p1.placeholder = 'Chłopak 1';
-        p2.placeholder = 'Chłopak 2';
-        historyTitle.innerText = 'Historia Wpisów (Gejowskie)';
-      }
-
-      document.getElementById('result').style.display = 'none';
-      loadHistory();
-      validateInputs();
+      document.getElementById('displayP1').innerText = p1 !== '' ? p1 : 'Kolega';
+      document.getElementById('displayP2').innerText = p2 !== '' ? p2 : 'Koleżanka';
     }
 
     function validateInputs() {
@@ -372,12 +310,8 @@
       return "Kocham";
     }
 
-    function getStorageKey() {
-      return 'shipHistory_' + currentCategory;
-    }
-
     function loadHistory() {
-      const history = JSON.parse(localStorage.getItem(getStorageKey())) || [];
+      const history = JSON.parse(localStorage.getItem('shipHistory')) || [];
       const historyList = document.getElementById('historyList');
       
       if (history.length === 0) {
@@ -400,11 +334,10 @@
       });
     }
 
-    // Resetowanie historii zabezpieczone hasłem 1234
     function resetHistory() {
-      const password = prompt("Wpisz hasło, aby zresetować historię dla bieżącej kategorii:");
+      const password = prompt("Wpisz hasło, aby zresetować historię:");
       if (password === "1234") {
-        localStorage.removeItem(getStorageKey());
+        localStorage.removeItem('shipHistory');
         loadHistory();
         alert("Historia została zresetowana.");
       } else if (password !== null) {
@@ -419,34 +352,58 @@
 
       if (!checker || !person1 || !person2) return;
 
-      const percent = getRandomPercentage();
-      const status = getStatusDescription(percent);
+      const btn = document.getElementById('calcBtn');
+      btn.disabled = true;
 
-      document.getElementById('scoreValue').innerText = percent + '%';
-      document.getElementById('statusValue').innerText = status;
-      document.getElementById('result').style.display = 'block';
-
-      const now = new Date();
-      const timeString = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const resultDiv = document.getElementById('result');
+      const scoreValue = document.getElementById('scoreValue');
+      const statusValue = document.getElementById('statusValue');
       
-      const newEntry = {
-        checker: checker,
-        p1: person1,
-        p2: person2,
-        percent: percent,
-        status: status,
-        date: timeString
-      };
+      resultDiv.style.display = 'block';
+      statusValue.innerText = "Losowanie dopasowania...";
 
-      const history = JSON.parse(localStorage.getItem(getStorageKey())) || [];
-      history.push(newEntry);
-      localStorage.setItem(getStorageKey(), JSON.stringify(history));
+      // Animacja losowania procentów (szybkie zmienianie liczb przez 1.5 sekundy)
+      let counter = 0;
+      const interval = setInterval(() => {
+        scoreValue.innerText = Math.floor(Math.random() * 101) + '%';
+        counter++;
+        if (counter > 15) {
+          clearInterval(interval);
+          
+          // Ostateczny wynik po animacji
+          const finalPercent = getRandomPercentage();
+          const finalStatus = getStatusDescription(finalPercent);
 
-      loadHistory();
+          scoreValue.innerText = finalPercent + '%';
+          statusValue.innerText = finalStatus;
+          btn.disabled = false;
+
+          // Zapis do historii
+          const now = new Date();
+          const timeString = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          
+          const newEntry = {
+            checker: checker,
+            p1: person1,
+            p2: person2,
+            percent: finalPercent,
+            status: finalStatus,
+            date: timeString
+          };
+
+          const history = JSON.parse(localStorage.getItem('shipHistory')) || [];
+          history.push(newEntry);
+          localStorage.setItem('shipHistory', JSON.stringify(history));
+
+          loadHistory();
+        }
+      }, 100);
     }
 
     window.onload = function() {
-      switchCategory('hetero');
+      loadHistory();
+      validateInputs();
+      updateNamesDisplay();
     };
   </script>
 
