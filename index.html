@@ -12,6 +12,7 @@
       --text-color: #c9d1d9;
       --accent-color: #ff4b72;
       --accent-hover: #e03e61;
+      --disabled-color: #383e47;
     }
 
     body {
@@ -60,6 +61,31 @@
       color: #ffffff;
     }
 
+    /* Wybór kategorii (zakładki) */
+    .tabs-container {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .tab-btn {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background-color: var(--accent-color);
+      border-color: var(--accent-color);
+      color: #fff;
+    }
+
     .card {
       background-color: var(--card-bg);
       border: 1px solid var(--border-color);
@@ -106,11 +132,18 @@
       font-size: 16px;
       font-weight: bold;
       cursor: pointer;
-      transition: background-color 0.2s;
+      transition: background-color 0.2s, opacity 0.2s;
     }
 
-    button.main-btn:hover {
+    button.main-btn:hover:not(:disabled) {
       background-color: var(--accent-hover);
+    }
+
+    button.main-btn:disabled {
+      background-color: var(--disabled-color);
+      color: #8b949e;
+      cursor: not-allowed;
+      opacity: 0.6;
     }
 
     .graphics-container {
@@ -195,27 +228,34 @@
 </head>
 <body>
 
-  <!-- Przycisk resetu historii w lewym górnym rogu -->
+  <!-- Przycisk resetu historii z hasłem -->
   <button class="reset-btn" onclick="resetHistory()">🗑️ Reset historii</button>
 
   <div class="container">
     <h1>ShipyRówne ❤️</h1>
 
+    <!-- Wybór kategorii -->
+    <div class="tabs-container">
+      <button class="tab-btn active" id="tab-hetero" onclick="switchCategory('hetero')">Klasyczne</button>
+      <button class="tab-btn" id="tab-lesbian" onclick="switchCategory('lesbian')">Lesbijki</button>
+      <button class="tab-btn" id="tab-gay" onclick="switchCategory('gay')">Gejowskie</button>
+    </div>
+
     <!-- Kalkulator -->
     <div class="card">
       <div class="input-group">
         <label for="checker">Kto sprawdza (Twoje imię):</label>
-        <input type="text" id="checker" placeholder="Twoje imię">
+        <input type="text" id="checker" placeholder="Twoje imię" oninput="validateInputs()">
       </div>
 
       <div class="input-group">
-        <label for="person1">Pierwsza osoba:</label>
-        <input type="text" id="person1" placeholder="Kolega">
+        <label id="label1" for="person1">Pierwsza osoba:</label>
+        <input type="text" id="person1" placeholder="Kolega" oninput="validateInputs()">
       </div>
 
       <div class="input-group">
-        <label for="person2">Druga osoba:</label>
-        <input type="text" id="person2" placeholder="Koleżanka">
+        <label id="label2" for="person2">Druga osoba:</label>
+        <input type="text" id="person2" placeholder="Koleżanka" oninput="validateInputs()">
       </div>
 
       <!-- Miejsca na Twoje grafiki -->
@@ -229,7 +269,7 @@
         </div>
       </div>
 
-      <button class="main-btn" onclick="calculateLove()">Sprawdź dopasowanie!</button>
+      <button id="calcBtn" class="main-btn" onclick="calculateLove()" disabled>Sprawdź dopasowanie!</button>
 
       <div id="result">
         <div class="score" id="scoreValue">0%</div>
@@ -239,7 +279,7 @@
 
     <!-- Historia -->
     <div class="card">
-      <h2>Historia Wpisów</h2>
+      <h2 id="historyTitle">Historia Wpisów (Klasyczne)</h2>
       <ul class="history-list" id="historyList">
         <li style="text-align: center; color: #8b949e;">Brak historii wpisów.</li>
       </ul>
@@ -247,6 +287,61 @@
   </div>
 
   <script>
+    let currentCategory = 'hetero';
+
+    function switchCategory(category) {
+      currentCategory = category;
+      
+      // Aktywne przyciski zakładek
+      document.getElementById('tab-hetero').className = category === 'hetero' ? 'tab-btn active' : 'tab-btn';
+      document.getElementById('tab-lesbian').className = category === 'lesbian' ? 'tab-btn active' : 'tab-btn';
+      document.getElementById('tab-gay').className = category === 'gay' ? 'tab-btn active' : 'tab-btn';
+
+      // Zmiana etykiet i tytułów w zależności od kategorii
+      const label1 = document.getElementById('label1');
+      const label2 = document.getElementById('label2');
+      const p1 = document.getElementById('person1');
+      const p2 = document.getElementById('person2');
+      const historyTitle = document.getElementById('historyTitle');
+
+      if (category === 'hetero') {
+        label1.innerText = 'Pierwsza osoba (Kolega):';
+        label2.innerText = 'Druga osoba (Koleżanka):';
+        p1.placeholder = 'Kolega';
+        p2.placeholder = 'Koleżanka';
+        historyTitle.innerText = 'Historia Wpisów (Klasyczne)';
+      } else if (category === 'lesbian') {
+        label1.innerText = 'Pierwsza dziewczyna:';
+        label2.innerText = 'Druga dziewczyna:';
+        p1.placeholder = 'Dziewczyna 1';
+        p2.placeholder = 'Dziewczyna 2';
+        historyTitle.innerText = 'Historia Wpisów (Lesbijki)';
+      } else if (category === 'gay') {
+        label1.innerText = 'Pierwszy chłopak:';
+        label2.innerText = 'Drugi chłopak:';
+        p1.placeholder = 'Chłopak 1';
+        p2.placeholder = 'Chłopak 2';
+        historyTitle.innerText = 'Historia Wpisów (Gejowskie)';
+      }
+
+      document.getElementById('result').style.display = 'none';
+      loadHistory();
+      validateInputs();
+    }
+
+    function validateInputs() {
+      const checker = document.getElementById('checker').value.trim();
+      const person1 = document.getElementById('person1').value.trim();
+      const person2 = document.getElementById('person2').value.trim();
+      const btn = document.getElementById('calcBtn');
+
+      if (checker !== '' && person1 !== '' && person2 !== '') {
+        btn.disabled = false;
+      } else {
+        btn.disabled = true;
+      }
+    }
+
     function getRandomPercentage() {
       const rand = Math.random() * 100;
       
@@ -277,8 +372,12 @@
       return "Kocham";
     }
 
+    function getStorageKey() {
+      return 'shipHistory_' + currentCategory;
+    }
+
     function loadHistory() {
-      const history = JSON.parse(localStorage.getItem('shipHistory')) || [];
+      const history = JSON.parse(localStorage.getItem(getStorageKey())) || [];
       const historyList = document.getElementById('historyList');
       
       if (history.length === 0) {
@@ -301,18 +400,24 @@
       });
     }
 
-    // Funkcja czyszcząca historię
+    // Resetowanie historii zabezpieczone hasłem 1234
     function resetHistory() {
-      if (confirm("Czy na pewno chcesz wyczyścić całą historię?")) {
-        localStorage.removeItem('shipHistory');
+      const password = prompt("Wpisz hasło, aby zresetować historię dla bieżącej kategorii:");
+      if (password === "1234") {
+        localStorage.removeItem(getStorageKey());
         loadHistory();
+        alert("Historia została zresetowana.");
+      } else if (password !== null) {
+        alert("Nieprawidłowe hasło!");
       }
     }
 
     function calculateLove() {
-      const checker = document.getElementById('checker').value.trim() || 'Twoje imię';
-      const person1 = document.getElementById('person1').value.trim() || 'Kolega';
-      const person2 = document.getElementById('person2').value.trim() || 'Koleżanka';
+      const checker = document.getElementById('checker').value.trim();
+      const person1 = document.getElementById('person1').value.trim();
+      const person2 = document.getElementById('person2').value.trim();
+
+      if (!checker || !person1 || !person2) return;
 
       const percent = getRandomPercentage();
       const status = getStatusDescription(percent);
@@ -333,14 +438,16 @@
         date: timeString
       };
 
-      const history = JSON.parse(localStorage.getItem('shipHistory')) || [];
+      const history = JSON.parse(localStorage.getItem(getStorageKey())) || [];
       history.push(newEntry);
-      localStorage.setItem('shipHistory', JSON.stringify(history));
+      localStorage.setItem(getStorageKey(), JSON.stringify(history));
 
       loadHistory();
     }
 
-    window.onload = loadHistory;
+    window.onload = function() {
+      switchCategory('hetero');
+    };
   </script>
 
 </body>
