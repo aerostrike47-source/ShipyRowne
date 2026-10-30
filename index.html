@@ -12,6 +12,7 @@
       --text-color: #c9d1d9;
       --accent-color: #ff4b72;
       --accent-hover: #e03e61;
+      --disabled-color: #383e47;
     }
 
     body {
@@ -106,11 +107,19 @@
       font-size: 16px;
       font-weight: bold;
       cursor: pointer;
-      transition: background-color 0.2s;
+      transition: background-color 0.2s, opacity 0.2s;
     }
 
-    button.main-btn:hover {
+    button.main-btn:hover:not(:disabled) {
       background-color: var(--accent-hover);
+    }
+
+    /* Wygląd zablokowanego przycisku */
+    button.main-btn:disabled {
+      background-color: var(--disabled-color);
+      color: #8b949e;
+      cursor: not-allowed;
+      opacity: 0.6;
     }
 
     .graphics-container {
@@ -195,7 +204,7 @@
 </head>
 <body>
 
-  <!-- Przycisk resetu historii w lewym górnym rogu -->
+  <!-- Przycisk resetu historii -->
   <button class="reset-btn" onclick="resetHistory()">🗑️ Reset historii</button>
 
   <div class="container">
@@ -205,143 +214,20 @@
     <div class="card">
       <div class="input-group">
         <label for="checker">Kto sprawdza (Twoje imię):</label>
-        <input type="text" id="checker" placeholder="Twoje imię">
+        <input type="text" id="checker" placeholder="Wpisz swoje imię" oninput="validateInputs()">
       </div>
 
       <div class="input-group">
         <label for="person1">Pierwsza osoba:</label>
-        <input type="text" id="person1" placeholder="Kolega">
+        <input type="text" id="person1" placeholder="Wpisz imię kolegi" oninput="validateInputs()">
       </div>
 
       <div class="input-group">
         <label for="person2">Druga osoba:</label>
-        <input type="text" id="person2" placeholder="Koleżanka">
+        <input type="text" id="person2" placeholder="Wpisz imię koleżanki" oninput="validateInputs()">
       </div>
 
       <!-- Miejsca na Twoje grafiki -->
       <div class="graphics-container">
         <div class="graphic-slot" id="slot1">
-          <img src="obrazek1.png" alt="Grafika 1" onerror="this.parentElement.innerText='[Grafika 1]'">
-        </div>
-        <div style="font-size: 24px;">+</div>
-        <div class="graphic-slot" id="slot2">
-          <img src="obrazek2.png" alt="Grafika 2" onerror="this.parentElement.innerText='[Grafika 2]'">
-        </div>
-      </div>
-
-      <button class="main-btn" onclick="calculateLove()">Sprawdź dopasowanie!</button>
-
-      <div id="result">
-        <div class="score" id="scoreValue">0%</div>
-        <div class="status" id="statusValue">-</div>
-      </div>
-    </div>
-
-    <!-- Historia -->
-    <div class="card">
-      <h2>Historia Wpisów</h2>
-      <ul class="history-list" id="historyList">
-        <li style="text-align: center; color: #8b949e;">Brak historii wpisów.</li>
-      </ul>
-    </div>
-  </div>
-
-  <script>
-    function getRandomPercentage() {
-      const rand = Math.random() * 100;
-      
-      if (rand < 1) return 0;
-      
-      if (rand < 76) {
-        return Math.floor(Math.random() * (90 - 20 + 1)) + 20;
-      } 
-      else if (rand < 88) {
-        return Math.floor(Math.random() * (19 - 1 + 1)) + 1;
-      } 
-      else {
-        return Math.floor(Math.random() * (100 - 91 + 1)) + 91;
-      }
-    }
-
-    function getStatusDescription(percent) {
-      if (percent === 0) return "Nie ma szans... (ale jednak jest ciutka!)";
-      if (percent <= 10) return "Nienawiść";
-      if (percent <= 20) return "Nie lubię";
-      if (percent <= 30) return "Spływka";
-      if (percent <= 40) return "Nawet ok";
-      if (percent <= 50) return "Spoczko";
-      if (percent <= 60) return "Nawet lubię";
-      if (percent <= 70) return "Lubię";
-      if (percent <= 80) return "Bardzo lubię";
-      if (percent <= 90) return "Podkochuje się";
-      return "Kocham";
-    }
-
-    function loadHistory() {
-      const history = JSON.parse(localStorage.getItem('shipHistory')) || [];
-      const historyList = document.getElementById('historyList');
-      
-      if (history.length === 0) {
-        historyList.innerHTML = '<li style="text-align: center; color: #8b949e;">Brak historii wpisów.</li>';
-        return;
-      }
-
-      historyList.innerHTML = '';
-      history.slice().reverse().forEach(entry => {
-        const li = document.createElement('li');
-        li.className = 'history-item';
-        li.innerHTML = `
-          <div class="history-header">Sprawdził(a): <strong>${entry.checker}</strong> • ${entry.date}</div>
-          <div class="history-body">
-            ${entry.p1} + ${entry.p2}
-            <span class="history-badge">${entry.percent}% (${entry.status})</span>
-          </div>
-        `;
-        historyList.appendChild(li);
-      });
-    }
-
-    // Funkcja czyszcząca historię
-    function resetHistory() {
-      if (confirm("Czy na pewno chcesz wyczyścić całą historię?")) {
-        localStorage.removeItem('shipHistory');
-        loadHistory();
-      }
-    }
-
-    function calculateLove() {
-      const checker = document.getElementById('checker').value.trim() || 'Twoje imię';
-      const person1 = document.getElementById('person1').value.trim() || 'Kolega';
-      const person2 = document.getElementById('person2').value.trim() || 'Koleżanka';
-
-      const percent = getRandomPercentage();
-      const status = getStatusDescription(percent);
-
-      document.getElementById('scoreValue').innerText = percent + '%';
-      document.getElementById('statusValue').innerText = status;
-      document.getElementById('result').style.display = 'block';
-
-      const now = new Date();
-      const timeString = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      
-      const newEntry = {
-        checker: checker,
-        p1: person1,
-        p2: person2,
-        percent: percent,
-        status: status,
-        date: timeString
-      };
-
-      const history = JSON.parse(localStorage.getItem('shipHistory')) || [];
-      history.push(newEntry);
-      localStorage.setItem('shipHistory', JSON.stringify(history));
-
-      loadHistory();
-    }
-
-    window.onload = loadHistory;
-  </script>
-
-</body>
-</html>
+          <img src="obrazek1.png" alt="Grafika 1
